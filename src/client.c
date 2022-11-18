@@ -96,16 +96,49 @@ int main(int argc, char * argv[])
     //
     // si c'est ORDER_COMPUTE_PRIME_LOCAL
     //    alors c'est un code complètement à part multi-thread
+    if (order == ORDER_COMPUTE_PRIME_LOCAL)
+    {
+        printf("fonction premier local\n");
+    }else{
     // sinon
     //    - entrer en section critique :
     //           . pour empêcher que 2 clients communiquent simultanément
     //           . le mutex est déjà créé par le master
+        int sem1=semget(SEM_CLIENT_MASTER,1,0);
+        myassert(sid_1 != -1,"erreur recuperation ");
+        operationMoins(sem1);
     //    - ouvrir les tubes nommés (ils sont déjà créés par le master)
     //           . les ouvertures sont bloquantes, il faut s'assurer que
     //             le master ouvre les tubes dans le même ordre
+        int client_master = open(TUBE_CLIENT_MASTER,O_WRONLY);
+        myassert(client_master != -1, "erreur ouverture");
+        int master_cient = open(TUBE_MASTER_CLIENT,O_RDONLY);
+        myassert(master_cient != -1, "erreur ouverture");
     //    - envoyer l'ordre et les données éventuelles au master
+        int ret = write(client_master, &order, sizeof(int));
+        myassert(ret != -1, "erreur ecriture");
+        //envoie du nombre (eventuellement)
+        if (order == ORDER_COMPUTE_PRIME)
+        {
+            int ret = write(client_master, &number, sizeof(int)); 
+            myassert(ret != -1, "erreur ecriture");
+        }
     //    - attendre la réponse sur le second tube
+        int reponse;
+        int ret =read(master_client, &reponse, sizeof(int));
+        myassert(ret != -1, "erreur lecture");
+        if(order == ORDER_COMPUTE_PRIME)
+            if(reponse == 1)
+                printf("Le resultat : %d est premier\n", number);
+            else
+                printf("Le resultat : %d n'est pas premier\n", number);
+        else
+            if(order == ORDER_STOP && reponse == ORDER_STOP)
+                printf("accusé de réception reçu, aurevoir\n");
+            else
+                printf("Resultat : %d\n", reponse);
     //    - sortir de la section critique
+            
     //    - libérer les ressources (fermeture des tubes, ...)
     //    - débloquer le master grâce à un second sémaphore (cf. ci-dessous)
     // 
@@ -114,6 +147,6 @@ int main(int argc, char * argv[])
     //
     // N'hésitez pas à faire des fonctions annexes ; si la fonction main
     // ne dépassait pas une trentaine de lignes, ce serait bien.
-    
+    }
     return EXIT_SUCCESS;
 }

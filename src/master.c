@@ -75,13 +75,24 @@ int main(int argc, char * argv[])
         usage(argv[0], NULL);
 
     // - création des sémaphores
+    int k=0;
+    int sem_client_master= creatSem(k,SEM_CLIENT_MASTER);
+    int sem_master =creatSem(k,SEM_MASTER);
+    my_semctl(sem_client_master,0);
+    my_semctl(sem_master,0);
     // - création des tubes nommés
+    creatTube(TUBE_CLIENT_MASTER);
+    creatTube(TUBE_MASTER_CLIENT);
     // - création du premier worker
 
     // boucle infinie
     loop(/* paramètres */);
 
     // destruction des tubes nommés, des sémaphores, ...
+    deleteTube(TUBE_CLIENT_MASTER);
+    deleteTube(TUBE_MASTER_CLIENT);
+    my_semdelete(sem_client_master);
+    my_semdelete(sem_master);
 
     return EXIT_SUCCESS;
 }

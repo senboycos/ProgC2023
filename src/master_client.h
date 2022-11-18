@@ -14,8 +14,29 @@
 #define ORDER_HIGHEST_PRIME       3
 #define ORDER_COMPUTE_PRIME_LOCAL 4   // ne concerne pas le master
 
+#define TUBE_CLIENT_MASTER "Tclientmaster"
+#define TUBE_MASTER_CLIENT "Tmasterclient"
+
+#define SEM_CLIENT_MASTER "Sclientmaster"
+#define SEM_MASTER "Smaster"
+
+#define cle 50
+
+
 // bref n'hésitez à mettre nombre de fonctions avec des noms explicites
 // pour masquer l'implémentation
 
+//creation semaphores
+int creatSem(int key,char * chemin);
+
+//operation sur semaphore
+void my_semctl(int semId,int valeur);
+void my_semdelete(int semId);
+void operationMoins(int semId);
+void operationPlus(int semId);
+
+//creation tubes
+void creatTube(const char * chemin);
+void deleteTube(const char * chemin);
 
 #endif
